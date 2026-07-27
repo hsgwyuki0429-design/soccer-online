@@ -1,0 +1,16 @@
+{
+  "name": "maru-soccer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "丸だけのオンラインサッカー。サーバ権威 + 予測補間の軽量ネットコード。",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node test/sim.test.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
