@@ -1,0 +1,22 @@
+# Render Blueprint — このリポジトリのサッカーサーバを 1 サービスで動かす。
+#
+# 使い方: Render の Dashboard → New → Blueprint → このリポジトリを選ぶ。
+# 手動で作る場合は Web Service を作って Build/Start を下と同じにするだけでよい。
+services:
+  - type: web
+    name: maru-soccer
+    runtime: node
+    plan: free              # 無料プランは 15 分無通信でスリープ → 復帰に 30〜60 秒かかる
+    region: singapore       # 日本から遊ぶなら singapore が一番近い
+    buildCommand: npm ci || npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # ランキングを使うときだけ設定する (未設定でもゲームは動く)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
