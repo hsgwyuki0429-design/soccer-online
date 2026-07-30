@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0e1512">
+<title>まるサッカー — 丸だけのオンラインサッカー</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="stage"></canvas>
+
+<!-- ======================= HUD ======================= -->
+<div id="hud" class="hidden">
+  <div id="scoreboard">
+    <span class="team t0" id="name0">レッド</span>
+    <span class="sc" id="score">0 - 0</span>
+    <span class="team t1" id="name1">ブルー</span>
+    <span class="clock" id="clock">3:00</span>
+  </div>
+  <div id="netinfo"><span id="ping">--</span>ms · <span id="roomtag">-</span></div>
+  <button id="btn-leave" title="やめる">×</button>
+  <button id="btn-zoom" title="ズーム">⤢</button>
+  <div id="stamina"><i></i></div>
+  <div id="toast"></div>
+  <div id="bigmsg"></div>
+</div>
+
+<!-- ======================= タッチ操作 ======================= -->
+<div id="touch" class="hidden">
+  <div id="stick"><i></i></div>
+  <button id="btn-kick">KICK</button>
+  <button id="btn-dash">DASH</button>
+</div>
+
+<!-- ======================= タイトル ======================= -->
+<div id="title" class="screen">
+  <div class="panel">
+    <h1>まる<span>サッカー</span></h1>
+    <p class="lead">丸を動かして、ドリブルして、蹴るだけ。<br>3対3・3分・BOT が席を埋めるのでいつでも始まる。</p>
+
+    <label class="field">
+      <span>なまえ</span>
+      <input id="in-name" maxlength="10" placeholder="ぷれいやー" autocomplete="off">
+    </label>
+
+    <button id="btn-quick" class="primary">クイックマッチ</button>
+
+    <div class="row">
+      <input id="in-room" maxlength="8" placeholder="あいことば" autocomplete="off">
+      <button id="btn-room">合言葉で入る</button>
+    </div>
+
+    <div id="rooms"></div>
+
+    <div class="tabs">
+      <button id="btn-help" class="ghost">あそびかた</button>
+      <button id="btn-rank" class="ghost">ランキング</button>
+    </div>
+    <p class="note" id="conn-note"></p>
+  </div>
+</div>
+
+<!-- ======================= あそびかた ======================= -->
+<div id="help" class="screen hidden">
+  <div class="panel">
+    <h2>あそびかた</h2>
+    <table class="keys">
+      <tr><th>移動</th><td>WASD / 方向キー<br>スマホ: 画面左側をドラッグ</td></tr>
+      <tr><th>キック</th><td>スペース / 左クリック<br>スマホ: KICK<br><b>押しっぱなしで溜まる</b>。離すと蹴る</td></tr>
+      <tr><th>ダッシュ</th><td>Shift / 右クリック<br>スマホ: DASH<br>スタミナを使う。敵に当てると<b>タックル</b></td></tr>
+    </table>
+    <ul class="tips">
+      <li><b>ドリブル</b>は触るだけ。走りながら押し出して運ぶ</li>
+      <li><b>溜めシュート</b>は強いが、溜めている間は足が遅くなる。溜めすぎるとタックルで潰される</li>
+      <li><b>横に走りながら蹴るとボールが曲がる</b>。壁際からゴール前へ巻くこともできる</li>
+      <li><b>タックル</b>されると 0.4 秒動けない。チャージも消える</li>
+      <li>ゴールポストは硬い。枠に当たると跳ね返る</li>
+    </ul>
+    <button class="primary back">とじる</button>
+  </div>
+</div>
+
+<!-- ======================= ランキング ======================= -->
+<div id="rank" class="screen hidden">
+  <div class="panel">
+    <h2>ランキング</h2>
+    <p class="note">勝ち 3 点 / 引き分け 1 点。同点はゴール数順。</p>
+    <div id="ranklist">よみこみ中…</div>
+    <button class="primary back">とじる</button>
+  </div>
+</div>
+
+<!-- ======================= 結果 ======================= -->
+<div id="result" class="screen hidden">
+  <div class="panel">
+    <h2 id="res-title">試合終了</h2>
+    <div id="res-score">0 - 0</div>
+    <div id="res-top"></div>
+    <p class="note">まもなく次の試合がはじまります</p>
+    <button id="btn-res-close" class="ghost">とじる</button>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
