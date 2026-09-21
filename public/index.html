@@ -45,6 +45,12 @@
       <input id="in-name" maxlength="10" placeholder="ぷれいやー" autocomplete="off">
     </label>
 
+    <label class="field">
+      <span>CPUレベル（1〜100）</span>
+      <input id="in-cpu-level" type="number" min="1" max="100" step="1" value="3" inputmode="numeric" aria-describedby="cpu-help">
+    </label>
+    <p class="note" id="cpu-help">Lv.3がこれまでの強さ。速さ・大きさ・キック性能は全員共通で、判断と精度が上がります。<br>合言葉の部屋では、最初に作った人のレベルを使います。</p>
+
     <button id="btn-quick" class="primary">クイックマッチ</button>
 
     <div class="row">

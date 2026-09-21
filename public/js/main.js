@@ -1,6 +1,7 @@
 // ============ まるサッカー: 起動とゲームループ ============
 
 import { DT, INPUT_HZ, PLAYER, MATCH, TEAM_NAME, TEAM_COLOR } from "../shared/constants.js";
+import { normalizeCpuLevel } from "../shared/cpu.js";
 import { canKick } from "../shared/physics.js";
 import { Net } from "./net.js";
 import { Input, isTouch } from "./input.js";
@@ -92,7 +93,7 @@ net.on.welcome = (m) => {
   self = new SelfPredictor(m.you, m.team);
   renderer.setTeam(m.team);
   meta = new Map();
-  el.roomtag.textContent = m.room;
+  el.roomtag.textContent = `${m.room} · CPU Lv.${m.cpuLevel ?? 3}`;
   el.hud.classList.remove("hidden");
   input.showTouch(isTouch);
   // スマホは画面下に操作ボタンが出るので、ピッチをその上へ寄せる
@@ -285,15 +286,19 @@ function tryLocalKick(power, state) {
 // ---------------------------------------------------------------- タイトル UI
 
 $("in-name").value = store.name;
+$("in-cpu-level").value = normalizeCpuLevel(localStorage.getItem("marusoccer.cpuLevel"));
 
 async function start(room) {
   const name = ($("in-name").value || "").trim().slice(0, 10);
   store.name = name;
+  const cpuLevel = normalizeCpuLevel($("in-cpu-level").value);
+  $("in-cpu-level").value = cpuLevel;
+  localStorage.setItem("marusoccer.cpuLevel", cpuLevel);
   el.note.textContent = "接続中…";
   unlockAudio();
   try {
     net.close();
-    await net.connect(wsUrl(room), { name: name || "ぷれいやー", pid: store.pid });
+    await net.connect(wsUrl(room), { name: name || "ぷれいやー", pid: store.pid, cpuLevel });
     el.note.textContent = "";
   } catch (e) {
     el.note.textContent = `つながりませんでした (${e.message || e})`;
@@ -330,7 +335,7 @@ async function loadRooms() {
     el.rooms.innerHTML = r.rooms.length
       ? r.rooms.map((x) => `<div class="r" data-id="${esc(x.id)}">
           <b>${esc(x.id)}</b> ${x.score[0]}-${x.score[1]}
-          <span>${x.humans}/${x.cap}人</span></div>`).join("")
+          <span>CPU Lv.${x.cpuLevel ?? 3} · ${x.humans}/${x.cap}人</span></div>`).join("")
       : "";
     for (const d of el.rooms.querySelectorAll(".r")) d.onclick = () => start(d.dataset.id);
   } catch { el.rooms.innerHTML = ""; }

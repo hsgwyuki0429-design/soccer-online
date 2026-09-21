@@ -10,13 +10,15 @@ import {
   collidePlayerBall, collidePlayers, canKick, applyKick, kickoffSpot,
 } from "../shared/physics.js";
 import { encodeSnapshot } from "../shared/protocol.js";
+import { normalizeCpuLevel } from "../shared/cpu.js";
 import { botInput, newBrain } from "./bots.js";
 
 export const PHASE = { WAIT: 0, KICKOFF: 1, PLAY: 2, GOAL: 3, RESULT: 4 };
 
 export class Room {
-  constructor(id, store) {
+  constructor(id, store, cpuLevel) {
     this.id = id;
+    this.cpuLevel = normalizeCpuLevel(cpuLevel);
     this.store = store;
     this.ents = [];              // プレイヤー(人間+BOT)の実体
     this.ball = createBall();
@@ -70,11 +72,11 @@ export class Room {
     const ent = createPlayer(this.allocId(), team);
     ent.bot = bot;
     ent.conn = null;
-    ent.name = bot ? "BOT" : "?";
+    ent.name = bot ? `CPU Lv.${this.cpuLevel}` : "?";
     ent.input = emptyInput();
     ent.lastSeq = 0;
     ent.goals = 0;
-    ent.brain = bot ? newBrain() : null;
+    ent.brain = bot ? newBrain(this.cpuLevel) : null;
     this.ents.push(ent);
     this.placeOne(ent);
     return ent;
@@ -321,8 +323,9 @@ export class Room {
     this.sendJson({
       t: "roster",
       room: this.id,
+      cpuLevel: this.cpuLevel,
       players: this.ents.map((e) => ({
-        id: e.id, name: e.name, team: e.team, bot: !!e.bot, goals: e.goals,
+        id: e.id, name: e.name, team: e.team, bot: !!e.bot, goals: e.goals, cpuLevel: e.bot ? this.cpuLevel : null,
       })),
     });
   }
@@ -330,6 +333,7 @@ export class Room {
   info() {
     return {
       id: this.id,
+      cpuLevel: this.cpuLevel,
       humans: this.humans.length,
       cap: MATCH.perTeam * 2,
       phase: this.phase,
@@ -348,23 +352,26 @@ export class Rooms {
     this.last = Date.now();
   }
 
-  get(id) {
+  get(id, cpuLevel) {
     let r = this.map.get(id);
     if (!r) {
       if (this.map.size >= this.max) return null;
-      r = new Room(id, this.store);
+      r = new Room(id, this.store, cpuLevel);
       this.map.set(id, r);
     }
     return r;
   }
 
   /** 空きのある部屋を探す。無ければ新しく作る */
-  quick() {
+  quick(cpuLevel) {
+    const level = normalizeCpuLevel(cpuLevel);
     for (const r of this.map.values()) {
-      if (r.open && r.humans.length > 0) return r;
+      if (r.open && r.cpuLevel === level && r.humans.length > 0) return r;
     }
-    for (const r of this.map.values()) if (r.open) return r;
-    return this.get(code());
+    for (const r of this.map.values()) if (r.open && r.cpuLevel === level) return r;
+    let id;
+    do { id = code(); } while (this.map.has(id));
+    return this.get(id, level);
   }
 
   step(dt) {
