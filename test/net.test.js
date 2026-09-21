@@ -59,7 +59,7 @@ test("HTTP: 静的配信と API", async () => {
 
 // ---------------------------------------------------------------- WebSocket
 
-function connect(room, name) {
+function connect(room, name, cpuLevel) {
   const ws = new WebSocket(`ws://127.0.0.1:${PORT}/ws${room ? `?room=${room}` : ""}`);
   ws.binaryType = "arraybuffer";
   const state = { ws, snaps: [], json: [], welcome: null };
@@ -74,7 +74,7 @@ function connect(room, name) {
   return new Promise((res, rej) => {
     ws.on("error", rej);
     ws.on("open", () => {
-      ws.send(JSON.stringify({ t: "hello", name, pid: `pid-${name}` }));
+      ws.send(JSON.stringify({ t: "hello", name, pid: `pid-${name}`, cpuLevel }));
       const to = setTimeout(() => rej(new Error("welcome が来ない")), 5000);
       const check = setInterval(() => {
         if (state.welcome) { clearTimeout(to); clearInterval(check); res(state); }
@@ -180,4 +180,19 @@ test("WS: 壊れたパケットや長すぎる名前で落ちない", async () =
   assert.equal(roster.players.find((p) => p.id === a.welcome.you).name.length, 10);
   assert.equal(a.ws.readyState, WebSocket.OPEN, "切断されてしまった");
   a.ws.close();
+});
+
+
+test("WS: CPUレベルを伝達し、既存の合言葉部屋のレベルを優先する", async () => {
+  const a = await connect("cpulevel", "host", 100);
+  const b = await connect("cpulevel", "guest", 1);
+  try {
+    assert.equal(a.welcome.cpuLevel, 100);
+    assert.equal(b.welcome.cpuLevel, 100);
+    const roster = b.json.find((m) => m.t === "roster");
+    assert.equal(roster.cpuLevel, 100);
+    assert.ok(roster.players.filter((p) => p.bot).every((p) => p.cpuLevel === 100));
+    const data = await (await fetch(BASE + "/api/rooms")).json();
+    assert.equal(data.rooms.find((r) => r.id === "cpulevel").cpuLevel, 100);
+  } finally { a.ws.close(); b.ws.close(); }
 });

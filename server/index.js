@@ -137,7 +137,7 @@ wss.on("connection", (ws, req) => {
     if (msg.t === "hello") {
       if (ent) return;
       ws.pid = String(msg.pid || "").slice(0, 40) || null;
-      room = wanted ? rooms.get(wanted) : rooms.quick();
+      room = wanted ? rooms.get(wanted, msg.cpuLevel) : rooms.quick(msg.cpuLevel);
       if (!room) { ws.close(1013, "full"); return; }
       if (!room.open) { ws.close(1013, "room full"); return; }
       ent = room.join(ws, msg.name);
@@ -145,6 +145,7 @@ wss.on("connection", (ws, req) => {
         t: "welcome",
         you: ent.id,
         room: room.id,
+        cpuLevel: room.cpuLevel,
         team: ent.team,
         inputHz: INPUT_HZ,
         match: MATCH,
